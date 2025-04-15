@@ -1,95 +1,111 @@
-# Assignment
+# Vietnamese Sentiment Analysis
 
+This repository contains code and documentation for a machine learning project that performs sentiment analysis on Vietnamese text. The project compares various approaches—including traditional machine learning models, deep learning models using token index and TF-IDF representations, and an ensemble stacking classifier—to analyze Vietnamese user comments and predict sentiment.
 
+---
 
-## Getting started
+## Table of Contents
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- [Problem Statement and Motivation](#problem-statement-and-motivation)
+- [Dataset Overview](#dataset-overview)
+- [Preprocessing Pipeline](#preprocessing-pipeline)
+- [Model Architectures](#model-architectures)
+  - [Token Index Deep Learning Model](#token-index-deep-learning-model)
+  - [TF-IDF Deep Learning Model](#tf-idf-deep-learning-model)
+  - [Machine Learning Models and Stacking Classifier](#machine-learning-models-and-stacking-classifier)
+- [Experimental Setup and Training](#experimental-setup-and-training)
+- [Results and Discussion](#results-and-discussion)
+- [References](#references)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+---
 
-## Add your files
+## Problem Statement and Motivation
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+Vietnamese social media and e-commerce platforms generate a large volume of user comments and reviews every day. There is a growing need for automated sentiment analysis to help businesses understand consumer opinions. This project is motivated by:
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/machine-learning964902/Assignment.git
-git branch -M main
-git push -uf origin main
-```
+- **Language Challenges:** Vietnamese is a tonal language with complex word boundaries and a mix of accented/unaccented texts.
+- **Business Applications:** Effective sentiment analysis can inform marketing strategies and customer service improvements.
+- **Comparative Analysis:** Evaluating modern deep learning approaches versus traditional machine learning methods on a low-resource language dataset.
 
-## Integrate with your tools
+---
 
-- [ ] [Set up project integrations](https://gitlab.com/machine-learning964902/Assignment/-/settings/integrations)
+## Dataset Overview
 
-## Collaborate with your team
+The dataset used in this project was sourced from Kaggle and contains over 31,000 Vietnamese user comments. Key characteristics include:
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+- **Class Labels:** 
+  - Positive (tích cực)
+  - Neutral (trung lập)
+  - Negative (tiêu cực)
+- **Preprocessing:** Irrelevant columns and duplicate rows were removed, and sentiment labels were mapped into their Vietnamese counterparts with corresponding numerical encodings.
 
-## Test and Deploy
+---
 
-Use the built-in continuous integration in GitLab.
+## Preprocessing Pipeline
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+To handle the nuances of the Vietnamese language, an advanced preprocessing pipeline was developed, consisting of:
 
-***
+- **Text Cleaning:** Removal of punctuation, emojis, and normalization (including lowercasing and reduction of character repetitions).
+- **Tokenization:** Using tools such as [UnderTheSea](https://pypi.org/project/pyvi/) and [ViTokenizer](https://pypi.org/project/pyvi/) to accurately segment Vietnamese text.
+- **Normalization:** Diacritic normalization and spacing adjustments to address challenges with accented/unaccented text.
+- **Label Mapping and Encoding:** Mapping string labels to numerical values for model training.
 
-# Editing this README
+This pipeline ensures that the text is clean, consistent, and suitable for both deep learning and machine learning models.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+---
 
-## Suggestions for a good README
+## Model Architectures
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### Token Index Deep Learning Model
 
-## Name
-Choose a self-explaining name for your project.
+- **Input Representation:** Sequences of token indices generated from the preprocessed text.
+- **Architecture:**
+  - **Embedding Layer:** Converts token indices into dense vectors that capture semantic relationships.
+  - **Convolutional Layers:** Extract local patterns (e.g., n-grams) from the text.
+  - **Bidirectional LSTM with Attention:** Captures long-range dependencies and focuses on relevant parts of the text.
+  - **Normalization & Dropout:** Mitigate overfitting and stabilize learning.
+  - **Global Pooling and Dense Layers:** Aggregate information and output class probabilities using a final softmax layer.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### TF-IDF Deep Learning Model
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- **Input Representation:** TF-IDF vectors created from the cleaned text.
+- **Architecture:**
+  - **Dense Layers:** Process the fixed-length TF-IDF features.
+  - **Batch Normalization and Dropout:** Improve training stability and prevent overfitting.
+  - **Residual Connections:** Maintain gradient flow and enable deeper network training.
+  - **Final Dense Output Layer:** Uses softmax to output class probabilities.
+- **Advantage:** Fixed-length input enables faster training than sequence-based models despite having a higher parameter count.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### Machine Learning Models and Stacking Classifier
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- **Individual Models:** Evaluated several traditional classifiers (e.g., Naive Bayes, Logistic Regression, SVM, Random Forest, Ridge Classifier) using both TF-IDF and token index features.
+- **Stacking Classifier:**
+  - **Base Models:** Random Forest, AdaBoost, and SVM.
+  - **Meta-Model:** Logistic Regression with balanced class weights.
+  - **Rationale:** Combining multiple models leverages their individual strengths, leading to improved generalization.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+---
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## Experimental Setup and Training
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+- **Data Splitting:**
+  - **Deep Learning Models:** 70% training, 15% validation, 15% testing.
+  - **Machine Learning Models:** 80% training, 10% validation, 10% testing.
+- **Callbacks:** Training is managed using TensorFlow callbacks:
+  - **ModelCheckpoint:** Saves the best model based on validation loss.
+  - **EarlyStopping:** Halts training if performance plateaus.
+  - **ReduceLROnPlateau:** Adjusts the learning rate when validation loss stagnates.
+- **Training Duration:** Models are trained for a fixed number of epochs with the best checkpoint restored for final evaluation.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## References 
+Vietnamese Sentiment Analysis Dataset: Kaggle Dataset
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Pyvi: Pyvi on PyPI
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+PhoBERT: PhoBERT GitHub Repository
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+PhoW2V: PhoW2V GitHub Repository
 
-## License
-For open source projects, say how it is licensed.
+TensorFlow: TensorFlow Official Website
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
-"# Simple-Vietnamese-Comment-Analysis" 
-"# Simple-Vietnamese-Comment-Analysis" 
+Detailed Report: Refer to the provided project report for a comprehensive discussion of methodologies and experimental results.
